@@ -1,13 +1,35 @@
 {
     "auth" : {
-        "secretKey" :  ""
+        "secretKey" :  "",
+        "saltLength" : 12,
+        "tokenExpiration": "24hr"
     },
-    "permissions": {
+    "errormsg" : {
+        "invalidToken" : "Authentication Unsuccessful. Invalid token supplied.",
+        "noTokenSupplied" : "Authentication Unsuccessful. No token supplied.",
+        "initialDatabaseConnectError" : "Error connecting to database! Exit application now to avoid errors",
+        "notAuthorized" : "You are not authorized for this operation",
+        "invalidCredentials" : "Invalid Credentials",
+        "invalidParameters" : "Incorrect parameters supplied. One or more parameters not in correct format",
+        "isOwnReimbursement" : "Cannot update your own reimbursement",
+        "databaseError" : "Database Error",
+        "passwordGenerationError" : "Server Error: Could not generate password",
+        "noUsersFound" : "No Users Found",
+        "noReimbursementsFound" : "No Reimbursements Found"
+
+    },
+    "permissions" : {
         "GET": {
             "/users": [2,10],
-            "/users/:id" : [2,10],
+            "/users/:id" : {
+                "SELF": [1,2,10],
+                "OTHER": [2,10]
+            },
             "/reimbursements/status/:statusId" : [2,10],
-            "/reimbursements/author/userId/:userId" : [2,10]
+            "/reimbursements/author/userId/:userId" : {
+                "SELF": [1,2,10],
+                "OTHER": [2,10]
+            }
         },
         "POST": {
             "/reimbursements" : [1,2,10]
@@ -28,6 +50,9 @@
         "host": "",
         "database": "",
         "password" : "",
-        "port" : 5432
+        "port" : 5432,
+        "max" : 20,
+        "idleTimeoutMillis": 30000,
+        "connectionTimeoutMillis": 2000
     }
 }

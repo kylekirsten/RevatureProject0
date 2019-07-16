@@ -1,9 +1,11 @@
-<<<<<<< HEAD
 import {ReimbursementType} from '../objects/reimbursementtype';
 import { ReimbursementStatus } from './reimbursementstatus';
 class Reimbursement {
-
-    public static getPropsAsColumns(): any[] {
+    /** getPropsAsColumns function
+     *  Gets properties of Reimbursement object and returns them as a string array
+     *  @returns string[]
+     */
+    public static getPropsAsColumns(): string[] {
         return ['reimbursementid', 'amount', 'author', 'datesubmitted',
         'dateresolved', 'description', 'resolver', 'status', 'type'];
     }
@@ -17,53 +19,38 @@ class Reimbursement {
     private status: ReimbursementStatus;
     private type: ReimbursementType;
 
-    constructor(reimbursementId: number, author: number, amount: number,
-                datesubmitted: number, dateresolved: number,
-                description: string, resolver: number, status: number, type: number) {
-            this.reimbursementId = reimbursementId;
-            this.author = author;
-            this.amount = amount;
-            this.dateSubmitted = datesubmitted;
-            if (dateresolved) {
-                this.dateResolved = dateresolved;
+    constructor(obj) {
+            this.reimbursementId = obj.reimbursementid;
+            this.author = obj.author;
+            this.amount = obj.amount;
+            this.dateSubmitted = obj.datesubmitted;
+            if (obj.dateresolved) {
+                this.dateResolved = obj.dateresolved;
             } else {
                 this.dateResolved = null;
             }
-            this.description = description;
-            if (resolver) {
-                this.resolver = resolver;
+            this.description = obj.description;
+            if (obj.resolver) {
+                this.resolver = obj.resolver;
             } else {
                 this.resolver = null;
             }
-=======
-import {ReimbursementType}  from '../objects/reimbursementtype';
-import { ReimbursementStatus } from './reimbursementstatus';
-class Reimbursement {
-    reimbursementId : number;
-    amount : number;
-    author : number;
-    dateSubmitted : number;
-    dateResolved : number;
-    description : string;
-    resolver : number;
-    status : ReimbursementStatus;
-    type : ReimbursementType;
-
-    constructor(reimbursementId : number, amount : number, author : number, datesubmitted : number,
-        description : string, resolver : number, status : number, type : number){
-            this.reimbursementId = reimbursementId;
-            this.amount = amount;
-            this.author = author;
-            this.dateSubmitted = datesubmitted;
-            this.description = description;
-            this.resolver = resolver;
->>>>>>> db2a426... Initial project
-            this.status = new ReimbursementStatus(status);
-            this.type = new ReimbursementType(type);
-        }
-};
-<<<<<<< HEAD
+            this.status = new ReimbursementStatus(obj.status);
+            this.type = new ReimbursementType(obj.type);
+    }
+    /** getAuthor function
+     *  Gets author of current Reimbursement object
+     *  @returns number
+     */
+    public getAuthor(): number {
+        return this.author;
+    }
+    /** getId function
+     *  Gets ReimbursementId of current Reimbursement object
+     *  @returns number
+     */
+    public getId(): number {
+        return this.reimbursementId;
+    }
+}
 export {Reimbursement};
-=======
-export {Reimbursement};
->>>>>>> db2a426... Initial project

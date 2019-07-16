@@ -1,35 +1,37 @@
-<<<<<<< HEAD
-import {SQLquery,Query_Type} from '../objects/sqlquery'
-=======
-import {SQL_Query,Query_Type} from '../objects/sqlquery'
->>>>>>> db2a426... Initial project
-import {User} from '../objects/user';
+import * as passwordHash from '../auth/password-hash';
+import config from '../config.json';
+import {RequestError} from '../objects/requesterror';
 import {Role} from '../objects/role';
-export function checkUser(username : string , password : string , callback : Function){
-    //Error variable definitions
-    const errorInvalidInput : string = "Invalid Input";
-    const errorInvalidCredentials : string = "Invalid Credentials";
-    
-    if(!username || !password) return callback(errorInvalidInput);
-    //Send new sql query with SQL_Query class to verify user login is correct
-<<<<<<< HEAD
-    const loginQuery = new SQLquery('users',['userId','firstName','lastName','email','role'],
-=======
-    const loginQuery = new SQL_Query('users',['userId','firstName','lastName','email','role'],
->>>>>>> db2a426... Initial project
-    `username = '${username}' AND password = '${password}'`);
-    //This call is to verify existing database content, so query type select is used.
+import {Query_Type, SQLquery} from '../objects/sqlquery';
+import {User} from '../objects/user';
+export function checkUser(username: string , password: string , callback: any) {
+    if (!username || !password) {
+        return callback(new RequestError(400, config.errormsg.invalidParameters));
+    }
+    let loggedInUserObject: User;
+    // Send new sql query with SQL_Query class to verify user login is correct
+    const loginQuery = new SQLquery('users', ['userid', 'username', 'hash', 'firstname', 'lastname', 'email', 'role']);
+    // This call is to verify existing database content, so query type select is used.
     loginQuery.setQuery(Query_Type.Select);
-    //Send query and send results through a callback function
-    loginQuery.sendQuery().then((sqlQueryResult : any)=>{
-        //If database result is empty, the user credentials must be wrong. Send back "invalid credentials"
-        if(sqlQueryResult.rows.length === 0) return callback(errorInvalidCredentials);
-        //Deconstructing query result into new user class
-        const {userid,firstname,lastname,email,role} = sqlQueryResult.rows[0];
-        const newRole : Role = new Role(parseInt(role));
-        let newUserSession : User = new User(userid,username,
-            firstname,lastname,email,newRole);
-        //return newly created User object
-        return callback(newUserSession);
-    }).catch((error)=>{return callback(error)});
+    loginQuery.setCondition('WHERE', ['username'], [username]);
+    // Send query and send results through a callback function
+    loginQuery.sendQuery().then((result: any) => {
+        return result;
+    }).catch(() => {
+        return callback(new RequestError(500, config.errormsg.databaseError));
+    }).then((sqlQueryResult) => {
+        if (sqlQueryResult.rows.length === 0) {
+            return callback(new RequestError(400, config.errormsg.invalidCredentials));
+        }
+        loggedInUserObject = new User(sqlQueryResult.rows[0]);
+        passwordHash.compareHash(password, sqlQueryResult.rows[0].hash).then((hashResult: boolean) => {
+            if (hashResult) {
+                return callback(loggedInUserObject);
+            } else {
+                return callback(new RequestError(400, config.errormsg.invalidCredentials));
+            }
+        }).catch(() => {
+            return callback(new RequestError(500, config.errormsg.passwordGenerationError));
+        });
+    });
 }

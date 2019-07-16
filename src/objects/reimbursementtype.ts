@@ -1,20 +1,40 @@
-<<<<<<< HEAD
-import { SQLquery, Query_Type } from "./sqlquery";
+import config from '../config.json';
+import { Query_Type, SQLquery } from '../objects/sqlquery';
 
-class ReimbursementType{
-    public static  populateTypes(): void{
-        //Select current reimbursement types from database
-        let sqlRetrieveQuery = new SQLquery('reimbursementtype',['typeid','type']);
+class ReimbursementType {
+    /** populateTypes function
+     *  Called when program starts. Retrieves all types of reimbursementtype from database
+     *  and populates class as a static property in order to be retrieved in all other instances
+     *  @returns void
+     */
+    public static  populateTypes(): void {
+        // Select current reimbursement types from database
+        const sqlRetrieveQuery = new SQLquery('reimbursementtype', ['typeid', 'type']);
         sqlRetrieveQuery.setQuery(Query_Type.Select);
         sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
-            //Loop through results and put them in an array
+            // Loop through results and put them in an array
                 for (const obj of sqlQueryResult.rows) {
-                this.typesofReimbursement[parseInt(obj.typeid)] = obj.type;
+                this.typesofReimbursement[parseInt(obj.typeid, 10)] = obj.type;
             }
-            }).catch((error:any)=> { console.log("Error connecting to database! Exit application now to avoid errors");
-        console.log(error);})
+            }).catch((error: any) => {
+                // tslint:disable-next-line: no-console
+                console.error(config.errormsg.initialDatabaseConnectError);
+            });
     }
-
+    /** getIdFromType function
+     * Used to get back the typeid when given a type in the form of a string.
+     * Used to translate user input to id syntax.
+     *  @params type: string - Type of reimbursement
+     *  @returns number
+     */
+    public static getIdFromType(type: string): number {
+        const retrievedId = ReimbursementType.typesofReimbursement.indexOf(type);
+        // If there is no index, the value will be -1, so it is set to 0 instead so it can evaluated as a falsy value
+        if (retrievedId === -1) {
+            return 0;
+        }
+        return retrievedId;
+    }
     private static typesofReimbursement = [];
     private typeId: number;
     private type: string;
@@ -23,47 +43,20 @@ class ReimbursementType{
         this.typeId = typeid;
         this.type = ReimbursementType.typesofReimbursement[typeid];
     }
-    public getType() {
+    /** getType function
+     *  DIsplays the reimbursement type string of the current instance
+     *  @returns string
+     */
+    public getType(): string {
         return this.type;
     }
-    
-    //static getExistingTypes() : Array<number>{
-    //    let existingTypesArr = [];
-    //    for(let checkKey in this.typesofReimbursement.keys){
-    //        if(this.typesofReimbursement[checkKey]){
-    //            existingTypesArr.push(checkKey);
-    //        }
-    //    }
-    //    return existingTypesArr;
-    //}
 
-=======
-import { SQL_Query, Query_Type } from "./sqlquery";
-
-class ReimbursementType{
-    static typesofReimbursement = [];
-    typeId : number;
-    type : string;
-    
-    getType(){
-        return this.type;
+    /** getTypeId function
+     *  DIsplays the reimbursement type id of the current instance
+     *  @returns number
+     */
+    public getTypeId(): number {
+        return this.typeId;
     }
-    static populateTypes() : void{
-        //Select current reimbursement types from database
-        let sqlRetrieveQuery = new SQL_Query('reimbursementtype',['*']);
-        sqlRetrieveQuery.setQuery(Query_Type.Select);
-        sqlRetrieveQuery.sendQuery().then((sqlQueryResult : any)=>{
-        //Loop through results and put them in an array
-            for(let obj of sqlQueryResult.rows){
-            this.typesofReimbursement[parseInt(obj.typeid)] = obj.type;
-        }        
-        }).catch((error:any)=> { console.log("Error connecting to database! Exit application now to avoid errors");
-    console.log(error);})
-    }
-    constructor(typeid : number){
-        this.typeId = typeid;
-        this.type = ReimbursementType.typesofReimbursement[typeid];
-    }
->>>>>>> db2a426... Initial project
 }
 export {ReimbursementType};

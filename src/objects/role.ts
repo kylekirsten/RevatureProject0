@@ -1,90 +1,99 @@
 import config from '../config.json';
-<<<<<<< HEAD
-import {SQLquery , Query_Type} from '../objects/sqlquery';
-=======
-import {SQL_Query,Query_Type} from '../objects/sqlquery';
->>>>>>> db2a426... Initial project
+import {Query_Type, SQLquery} from '../objects/sqlquery';
+
 enum RequestType {
     GET,
     POST,
     PATCH,
     PUT,
-    DELETE
+    DELETE,
 }
 class Role {
-    static typesOfRole = [];
-    roletype : string;
-    roleid : number;
-    
-<<<<<<< HEAD
-    static async populateTypes () : Promise<any>{
-        let sqlRetrieveQuery = new SQLquery('roles',['roleid,rolename']);
-=======
-    static populateTypes () : void{
-        let sqlRetrieveQuery = new SQL_Query('roles',['*']);
->>>>>>> db2a426... Initial project
+    /** populateTypes function
+     *  Called when program starts. Retrieves all types of roles from database
+     *  and populates class as a static property in order to be retrieved in all other instances
+     *  @returns void
+     */
+    public static populateTypes(): void {
+        const sqlRetrieveQuery = new SQLquery('roles', ['*']);
         sqlRetrieveQuery.setQuery(Query_Type.Select);
-        sqlRetrieveQuery.sendQuery().then((sqlQueryResult : any)=>{
-            for(let obj of sqlQueryResult.rows){
-                Role.typesOfRole[parseInt(obj.roleid)] = obj.rolename;
+        sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
+            for (const obj of sqlQueryResult.rows) {
+                Role.typesOfRole[parseInt(obj.roleid, 10)] = obj.rolename;
             }
-        }).catch((error : any) => {console.log("Database Connection Failed! Please exit application to avoid errors");
-        console.log(error);
+        }).catch((error: any) => {
+            // tslint:disable-next-line: no-console
+            console.error(config.errormsg.initialDatabaseConnectError);
         });
     }
-<<<<<<< HEAD
-    canPerform(url : string, type: RequestType, userId : number = 0, resourceId : number = 0) : boolean{
-=======
-    canPerform(url : string, type: RequestType) : boolean{
->>>>>>> db2a426... Initial project
-        //work on putting this all in config file
-        let configPerms = config.permissions;
-        let fixedURL = url;
-        //Fix trailing slashes at the end of urls
-        while(fixedURL.endsWith('/')){
-<<<<<<< HEAD
-            fixedURL = fixedURL.substring(0,fixedURL.length - 1);        
+    /** getIdFromType function
+     * Used to get back the typeid when given a type in the form of a string. Used to translate user input to id syntax.
+     *  @params type: string - Type of role
+     *  @returns number
+     */
+    public static getIdFromType(type: string): number {
+        const retrievedId = Role.typesOfRole.indexOf(type);
+        // If there is no index, the value will be -1, so it is set to 0 instead so it can evaluated as a falsy value
+        if (retrievedId === -1) {
+            return 0;
         }
-        let jsonPath : any = configPerms[RequestType[type]][fixedURL];
-        if (jsonPath.hasOwnProperty("SELF")){
-            if(userId === resourceId){
-                jsonPath = jsonPath['SELF'];
-            }else{
-                jsonPath = jsonPath['OTHER'];
+        return retrievedId;
+    }
+    private static typesOfRole = [];
+    private roleType: string;
+    private roleId: number;
+    constructor( roleid: number) {
+        this.roleId = roleid;
+        this.roleType = Role.typesOfRole[roleid];
+    }
+    /** canPerform function
+     *  Used to check whether a user can access or interact with a certain resource. userId
+     *  and resourceId parameters can be used to check whether requested resource is the user's own
+     *  or another user's resource and handled accordingly.
+     *  @params url: string - Absolute route of routed request. Example: (/users/:userid).
+     *  userId (optional) : number - userId of user performing request.
+     *  resourceId : number - id of owner of requested resource.
+     *  @returns boolean
+     */
+    public canPerform(url: string, type: RequestType, userId: number = 0, resourceId: number = 0): boolean {
+
+        // work on putting this all in config file
+        const configPerms = config.permissions;
+        let fixedURL = url;
+        // Fix trailing slashes at the end of urls
+        while (fixedURL.endsWith('/')) {
+            fixedURL = fixedURL.substring(0, fixedURL.length - 1);
+        }
+        let jsonPath: any = configPerms[RequestType[type]][fixedURL];
+        if (jsonPath.hasOwnProperty('SELF')) {
+            if (userId === resourceId) {
+                jsonPath = jsonPath.SELF;
+            } else {
+                jsonPath = jsonPath.OTHER;
             }
         }
-=======
-            fixedURL = fixedURL.substring(0,fixedURL.length - 1);        }
-        let jsonPath = configPerms[RequestType[type]][fixedURL];
->>>>>>> db2a426... Initial project
-        for(let applicableRoles of jsonPath){
-            if(this.roleid === applicableRoles){
+
+        for (const applicableRoles of jsonPath) {
+            if (this.roleId === applicableRoles) {
                 return true;
             }
         }
     }
-    getRoleType() : string{
+    /** getRoleType function
+     * Gets role type string of current Role instance
+     *  @returns string
+     */
+    public getRoleType(): string {
 
-        return `${this.roletype}`;
+        return `${this.roleType}`;
     }
-    constructor( roleid : number){
-        this.roleid = roleid;
-        this.roletype = Role.typesOfRole[roleid];       
-<<<<<<< HEAD
-=======
-        console.log("Added user with role of " + this.roletype)
->>>>>>> db2a426... Initial project
+    /** getRoleId function
+     * Gets roleid of current Role instance
+     *  @returns number
+     */
+    public getRoleId(): number {
+        return this.roleId;
     }
+
 }
-export {Role,RequestType};
-
-
-
-
-
-
-
-
-
-
-
+export {RequestType, Role};
