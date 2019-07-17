@@ -4,7 +4,14 @@ import { ReimbursementStatus } from '../objects/reimbursementstatus';
 import { ReimbursementType } from '../objects/reimbursementtype';
 import {RequestError} from '../objects/requesterror';
 import {Query_Type, SQLquery} from '../objects/sqlquery';
-
+/**
+ * Creates a new reimbursement in the database given parameters.
+ * Utilizes many different checks to see if user provided input is valid
+ * @param callback Function to call after completed.
+ * @param password UserID as type integer. integer
+ * @param params Object passed to database. Required parameters include: amount, type, description
+ * @returns void. Works via callback function
+ */
 export function newReimbursement(callback: any, userID: number, params: any) {
     const columns: string[] = [];
     const values: string[] = [];
@@ -66,6 +73,14 @@ export function newReimbursement(callback: any, userID: number, params: any) {
         return callback(new RequestError(500, config.errormsg.databaseError));
     });
 }
+/**
+ * Selects reimbursements from database that match author provided.
+ * Utilizes many different checks to see if user provided input is valid
+ * @param callback Function to call after completed.
+ * @param password UserID as type integer. integer
+ * @param params Object passed to database. Required parameters include: amount, type, description
+ * @returns void. Works via callback function
+ */
 export function selectReimbursementByAuthor(callback: any, author: number,
                                             columns: string[] = Reimbursement.getPropsAsColumns(),
                                             datesubmitted: number = 0) {
@@ -170,46 +185,49 @@ export function updateReimbursement(callback: any, userId: number, params: any) 
     /** Following code block is used to check if the reimbursement being updated is owned by the requestor.
      *  A user should not be able to update their own reimbursements.
      */
-    selectReimbursementById((result: Reimbursement | RequestError) => {
-        let isOwnReimbursement: boolean = false;
-        // If object returned from function is of type RequestError, return the error and stop executing function
-        // Otherwise, check if is an Array object. If neither satisfy, it must be a single Reimbursement object.
+    let isOwnReimbursement: boolean = false;
+    selectReimbursementById(params.reimbursementId).then((result) => {
         if (result instanceof RequestError) {
-                return callback(callback(result));
+            isOwnReimbursement = true;
+            return callback(result);
         } else {
             const singleResult: Reimbursement = result as Reimbursement;
             if (singleResult.getAuthor() === userId) {
                 isOwnReimbursement = true;
             }
         }
-        if (isOwnReimbursement) { return callback(new RequestError(400, config.errormsg.isOwnReimbursement)); }
-    }, params.reimbursementId);
-
-    // Add current date into columns,values arrays to set as resolvedate.
-    // Also add resolver as the current userId passed to function
-    columns.push(`dateresolved`);
-    values.push(`${Date.now()}`);
-    columns.push(`resolver`);
-    values.push(`${userId}`);
-    // Setup update query in order to update row with specified reimbursementId with values
-    // and columns specified from earlier.
-    const sqlUpdateQuery: SQLquery = new SQLquery('reimbursements', columns, values);
-    sqlUpdateQuery.setQuery(Query_Type.Update);
-    sqlUpdateQuery.setCondition('WHERE', ['reimbursementid'], [params.reimbursementId]);
-    sqlUpdateQuery.sendQuery().then((sqlUpdateResult) => {
-        return callback(new Reimbursement(sqlUpdateResult.rows[0]));
     }).catch((error) => {
         return callback(new RequestError(500, config.errormsg.databaseError));
+    }).then(() => {
+        if (isOwnReimbursement) { return callback(new RequestError(400, config.errormsg.isOwnReimbursement)); }
+        // Add current date into columns,values arrays to set as resolvedate.
+        // Also add resolver as the current userId passed to function
+        columns.push(`dateresolved`);
+        values.push(`${Date.now()}`);
+        columns.push(`resolver`);
+        values.push(`${userId}`);
+        // Setup update query in order to update row with specified reimbursementId with values
+        // and columns specified from earlier.
+        const sqlUpdateQuery: SQLquery = new SQLquery('reimbursements', columns, values);
+        sqlUpdateQuery.setQuery(Query_Type.Update);
+        sqlUpdateQuery.setCondition('WHERE', ['reimbursementid'], [params.reimbursementId]);
+        sqlUpdateQuery.sendQuery().then((sqlUpdateResult) => {
+            return callback(new Reimbursement(sqlUpdateResult.rows[0]));
+        }).catch((error) => {
+            return callback(new RequestError(500, config.errormsg.databaseError));
+        });
     });
 }
-function selectReimbursementById(callback: any, reimbursementId: number) {
-    const selectSQLQuery: SQLquery = new SQLquery('reimbursements', Reimbursement.getPropsAsColumns());
-    selectSQLQuery.setQuery(Query_Type.Select);
-    selectSQLQuery.setCondition('WHERE', ['reimbursementid'], [`${reimbursementId}`]);
-    selectSQLQuery.sendQuery().then((sqlSelectResult: any) => {
-        return callback(new Reimbursement(sqlSelectResult.rows[0]));
-    }).catch((error) => {
-        return callback (new RequestError(500, config.errormsg.databaseError));
+function selectReimbursementById(reimbursementId: number) {
+    return new Promise((resolve, reject) => {
+        const selectSQLQuery: SQLquery = new SQLquery('reimbursements', Reimbursement.getPropsAsColumns());
+        selectSQLQuery.setQuery(Query_Type.Select);
+        selectSQLQuery.setCondition('WHERE', ['reimbursementid'], [`${reimbursementId}`]);
+        selectSQLQuery.sendQuery().then((sqlSelectResult: any) => {
+            resolve(new Reimbursement(sqlSelectResult.rows[0]));
+        }).catch((error) => {
+            return reject(new RequestError(500, config.errormsg.databaseError));
+        });
     });
 }
 function typeCheckReimbursementParams(params): boolean {

@@ -15,9 +15,12 @@
         "databaseError" : "Database Error",
         "passwordGenerationError" : "Server Error: Could not generate password",
         "noUsersFound" : "No Users Found",
-        "noReimbursementsFound" : "No Reimbursements Found"
-
+        "noReimbursementsFound" : "No Reimbursements Found",
+        "noResourceFound" : "Resource Not Found"
     },
+    "infomsg" : {
+        "serverStartMessage" : "ERS REST API Service Started"
+    }
     "permissions" : {
         "GET": {
             "/users": [2,10],

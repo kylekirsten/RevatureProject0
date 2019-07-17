@@ -80,11 +80,15 @@ class SQLquery {
     }
     /** Set Condition Function
      * Used to set various constraints for current SqlQuery instance, including WHERE, HAVING, ect.
-     * @Params : type: string; Ex: WHERE, HAVING, ect. ,
-     *  columns: array of columns, values: array of values, additionKey: Takes either AND or OR.
+     * @param : type: string; Ex: WHERE, HAVING, ect. ,
+     * @param columns: array of columns to use in query
+     * @param values: array of values to use in query
+     * @param additionKey: Takes either AND or OR.
+     * @param orderBy: Used in query to specify which column the results are ordered by.
      * @returns: void
      */
-    public setCondition(type: string, columns: string[], values: any[], additionKey: string = 'AND') {
+    public setCondition(type: string, columns: string[], values: any[],
+                        additionKey: string = 'AND', orderBy: string = this.columnNames[0]) {
         this.query += `${type} `;
         this.query += columns[0];
         this.query += `= $${this.queryArguments.length + 1}`;
@@ -100,6 +104,9 @@ class SQLquery {
         // (because it would return a syntax error)
         if (!this.query.includes('SELECT')) {
         this.query += ' RETURNING *;';
+        }
+        if (this.query.includes('SELECT')) {
+            this.query += `ORDER BY ${orderBy} ASC;`;
         }
     }
     /** GetQuery Function

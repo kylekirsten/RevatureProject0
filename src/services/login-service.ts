@@ -4,6 +4,14 @@ import {RequestError} from '../objects/requesterror';
 import {Role} from '../objects/role';
 import {Query_Type, SQLquery} from '../objects/sqlquery';
 import {User} from '../objects/user';
+/** checkUser Function.
+ * Checks to see if the username and password provided match a result in the database and constitutes
+ * a valid user.
+ * @param username Username provided by user input. Type: string
+ * @param password Password provided by user input. Type: string
+ * @param callback Callback function setup. This function doesn't use promises
+ * @returns void. Works via callback function
+ */
 export function checkUser(username: string , password: string , callback: any) {
     if (!username || !password) {
         return callback(new RequestError(400, config.errormsg.invalidParameters));
