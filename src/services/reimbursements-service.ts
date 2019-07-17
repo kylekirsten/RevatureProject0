@@ -121,6 +121,14 @@ export function selectReimbursementByAuthor(callback: any, author: number,
         return callback (new RequestError(500, config.errormsg.databaseError));
     });
 }
+/**
+ * Selects reimbursements from database based on provided status type.
+ * Utilizes many different checks to see if user provided input is valid
+ * @param callback Function to call after completed.
+ * @param statusId Status is usually passsed as string (because of user input). String is converted to
+ * integer form via function.
+ * @returns void. Works via callback function
+ */
 export function selectReimbursementByStatus(callback: any, statusId: any): any {
     const params = {status : statusId};
     // Formats status so it can take string or numerical id values
@@ -149,7 +157,21 @@ export function selectReimbursementByStatus(callback: any, statusId: any): any {
         return callback(new RequestError(500, config.errormsg.databaseError));
     });
 }
+/**
+ * Updates an existing reimbursement in the database
+ * Utilizes many different checks to see if user provided input is valid
+ * and prevents users from updaitng their own reimbursements
+ * @param callback Function to call after completed.
+ * @param userId Requestor's userID
+ * @param params Object passed to database. Required parameter is reimbursementId
+ * Optional parameters include: amount, status, type, description
+ * @returns void. Works via callback function
+ */
 export function updateReimbursement(callback: any, userId: number, params: any) {
+    // If reimbursementId is not passed, send an error
+    if (!params.reimbursementId) {
+        return callback(new RequestError(400, config.errormsg.invalidParameters));
+    }
     // These two code blocks enable users to pass type and status as string values or numerical id values
     if (params.status) {
         params.status = correctStatus(params.status);
@@ -218,7 +240,13 @@ export function updateReimbursement(callback: any, userId: number, params: any) 
         });
     });
 }
-function selectReimbursementById(reimbursementId: number) {
+/**
+ * Selects information about a specific reimbursement
+ * Used mainly to check if a reimbursement being updated is the user's own reimbursement
+ * @param reimbursementId The specific id of the reimbursement
+ * @returns Promise with type Reimbursement (if successful) or RequestError (if error)
+ */
+function selectReimbursementById(reimbursementId: number): Promise<Reimbursement | RequestError> {
     return new Promise((resolve, reject) => {
         const selectSQLQuery: SQLquery = new SQLquery('reimbursements', Reimbursement.getPropsAsColumns());
         selectSQLQuery.setQuery(Query_Type.Select);
@@ -226,10 +254,16 @@ function selectReimbursementById(reimbursementId: number) {
         selectSQLQuery.sendQuery().then((sqlSelectResult: any) => {
             resolve(new Reimbursement(sqlSelectResult.rows[0]));
         }).catch((error) => {
-            return reject(new RequestError(500, config.errormsg.databaseError));
+            reject(new RequestError(500, config.errormsg.databaseError));
         });
     });
 }
+/**
+ * Used to type check user input for reimbursement params
+ * @param params Takes object of params with any of following fields:
+ * reimbursementId, amount, author, description, type, status
+ * @returns boolean. True if no type errors, false if there are type errors.
+ */
 function typeCheckReimbursementParams(params): boolean {
     // Type checking for passed parameters. Calls error if:
     // - ReimbursementId is not a number

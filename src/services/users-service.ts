@@ -4,6 +4,12 @@ import {RequestError } from '../objects/requesterror';
 import {Role} from '../objects/role';
 import {Query_Type, SQLquery} from '../objects/sqlquery';
 import {User} from '../objects/user';
+/**
+ * Used to list an array of users or a specific user object as specified by userID
+ * @param callback Function to call after completed.
+ * @param userID userID of user you want to display. Defaults to 0, which lists all users
+ * @returns User, User[], or RequestError. Works via callback function
+ */
 export function listUsers(callback: any, userID: number = 0) {
     // define a new SQL_Query class in order to get userlist
     const userListQuery = new SQLquery('users', ['userid', 'username', 'hash'
@@ -31,6 +37,15 @@ export function listUsers(callback: any, userID: number = 0) {
     }).catch((error) => {return callback(new RequestError(500, config.errormsg.databaseError));
     });
 }
+/**
+ * Updates an existing user in the database
+ * Utilizes many different checks to see if user provided input is valid
+ * @param callback Function to call after completed.
+ * @param userID ID of user you want to update
+ * @param params Object passed to database. No parameters are required.
+ * Optional parameters include username, password, firstname, lastname, email, role
+ * @returns User. Works via callback function
+ */
 export function updateUser(callback: any, userID: number, params: any) {
     const columnsArray = [];
     const valuesArray = [];
