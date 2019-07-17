@@ -138,7 +138,7 @@ export function selectReimbursementByStatus(callback: any, statusId: any): any {
     }
     if (!statusId || !typeCheckReimbursementParams(params)) {
         return callback(new RequestError(400,
-                config.errormsg.invalidParameters).sendObject());
+                config.errormsg.invalidParameters));
     }
     const selectSQLQuery: SQLquery = new SQLquery('reimbursements', Reimbursement.getPropsAsColumns());
     selectSQLQuery.setQuery(Query_Type.Select);

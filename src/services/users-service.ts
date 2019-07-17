@@ -17,10 +17,13 @@ export function listUsers(callback: any, userID: number = 0) {
     // Retrieving user list via a select query
     userListQuery.setQuery(Query_Type.Select);
     if (userID) {
+        if (isNaN(userID)) {
+            return callback(new RequestError(400, config.errormsg.invalidParameters));
+        }
         userListQuery.setCondition('WHERE', ['userid'], [`${userID}`]);
     }
     userListQuery.sendQuery().then((sqlQueryResult: any) => {
-        if (sqlQueryResult.rows.length === 0) { return callback(new RequestError(200, config.errormsg.noUsersFound)); }
+        if (sqlQueryResult.rows.length === 0) { return callback(new RequestError(404, config.errormsg.noUsersFound)); }
         // Deconstructing query result into new user class
         const userList: User[] = new Array();
         // If only one user is returned return only that user. Otherwise continue on an create a user array
@@ -51,17 +54,6 @@ export function updateUser(callback: any, userID: number, params: any) {
     const valuesArray = [];
     let procedureAfterHash;
     // If a user is updating their password, this block turns it into a hash.
-    if (params.password) {
-        passwordHash.generateHash(params.password).then((result) => {
-            params.hash = result;
-            params.password = undefined;
-            procedureAfterHash();
-        }).catch(() => {
-            return callback(new RequestError(500, config.errormsg.passwordGenerationError));
-        });
-    } else {
-        procedureAfterHash();
-    }
     procedureAfterHash = (() => {
         // Checks if role was returned as string (indicating they are using role type).
         // This block turns it into a roleid which is what is required by the database.
@@ -77,6 +69,9 @@ export function updateUser(callback: any, userID: number, params: any) {
                 valuesArray.push(params[columns]);
             }
         }
+        if (columnsArray.length === 0 || columnsArray.length !== valuesArray.length) {
+            return callback(new RequestError(400, config.errormsg.invalidParameters));
+        }
         const updateUserQuery = new SQLquery('users', columnsArray, valuesArray);
         updateUserQuery.setQuery(Query_Type.Update);
         updateUserQuery.setCondition('WHERE', ['userid'], [userID]);
@@ -90,6 +85,17 @@ export function updateUser(callback: any, userID: number, params: any) {
         }).catch((error: any) =>  {return callback(new RequestError(500, config.errormsg.databaseError));
         });
     });
+    if (params.password) {
+        passwordHash.generateHash(params.password).then((result) => {
+            params.hash = result;
+            params.password = undefined;
+            procedureAfterHash();
+        }).catch(() => {
+            return callback(new RequestError(500, config.errormsg.passwordGenerationError));
+        });
+    } else {
+        procedureAfterHash();
+    }
 }
 /** function correctRole
  *  Checks if user put role in as type string or type number and attempts to convert if is a type string.

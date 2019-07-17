@@ -26,7 +26,7 @@ app.use('/reimbursements', checktoken, reimbursementRouter);
 // Login router
 app.use('/login', loginRouter);
 // Handle invalid route requests and return 404 error
-app.get('/*', (req, res) => {
+app.use('/*', (req, res) => {
     res.status(404).send({message: 'Resource not found'});
 });
 // Start the server listening at port 3000.

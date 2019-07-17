@@ -40,11 +40,11 @@ class Role {
         return retrievedId;
     }
     private static typesOfRole = [];
-    private roleType: string;
+    private role: string;
     private roleId: number;
     constructor( roleid: number) {
         this.roleId = roleid;
-        this.roleType = Role.typesOfRole[roleid];
+        this.role = Role.typesOfRole[roleid];
     }
     /** canPerform function
      *  Used to check whether a user can access or interact with a certain resource. userId
@@ -85,7 +85,7 @@ class Role {
      */
     public getRoleType(): string {
 
-        return `${this.roleType}`;
+        return `${this.role}`;
     }
     /** getRoleId function
      * Gets roleid of current Role instance
