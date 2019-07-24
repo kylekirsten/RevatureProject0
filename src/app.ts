@@ -29,8 +29,8 @@ app.use('/login', loginRouter);
 app.use('/*', (req, res) => {
     res.status(404).send({message: 'Resource not found'});
 });
+const PORT = parseInt(config.ServerVariable.serverPort, 10);
 // Start the server listening at port 3000.
-const PORT = 3000; // port of API server. Change to 3000 for production.
 app.listen(PORT, () => {
     console.info(config.infomsg.serverStartMessage);
     console.info(`Access via port ${PORT}`);

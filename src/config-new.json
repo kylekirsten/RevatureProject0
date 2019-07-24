@@ -48,6 +48,9 @@
 
         }
     },
+    "ServerVariable": {
+        "serverPort": "5000"
+    },
     "SQL": {
         "user": "",
         "host": "",
