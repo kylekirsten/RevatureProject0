@@ -7,19 +7,23 @@ class ReimbursementType {
      *  and populates class as a static property in order to be retrieved in all other instances
      *  @returns void
      */
-    public static  populateTypes(): void {
+    public static  populateTypes(): Promise<boolean> {
         // Select current reimbursement types from database
-        const sqlRetrieveQuery = new SQLquery('reimbursementtype', ['typeid', 'type']);
-        sqlRetrieveQuery.setQuery(Query_Type.Select);
-        sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
-            // Loop through results and put them in an array
+        return new Promise ((resolve, reject) => {
+            const sqlRetrieveQuery = new SQLquery('reimbursementtype', ['typeid', 'type']);
+            sqlRetrieveQuery.setQuery(Query_Type.Select);
+            sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
+                // Loop through results and put them in an array
                 for (const obj of sqlQueryResult.rows) {
                 this.typesofReimbursement[parseInt(obj.typeid, 10)] = obj.type;
-            }
+                }
+                resolve(true);
             }).catch((error: any) => {
                 // tslint:disable-next-line: no-console
                 console.error(config.errormsg.initialDatabaseConnectError);
+                reject(false);
             });
+        });
     }
     /** getIdFromType function
      * Used to get back the typeid when given a type in the form of a string.

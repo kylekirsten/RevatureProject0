@@ -25,7 +25,6 @@ loginRouter.post('/', (req: Request, res: Response) => {
                 message : result,
                 token,
             }); // message sent back to the requestor
-
         }
     });
 });

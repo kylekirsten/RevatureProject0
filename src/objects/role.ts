@@ -14,16 +14,20 @@ class Role {
      *  and populates class as a static property in order to be retrieved in all other instances
      *  @returns void
      */
-    public static populateTypes(): void {
-        const sqlRetrieveQuery = new SQLquery('roles', ['*']);
-        sqlRetrieveQuery.setQuery(Query_Type.Select);
-        sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
-            for (const obj of sqlQueryResult.rows) {
-                Role.typesOfRole[parseInt(obj.roleid, 10)] = obj.rolename;
-            }
-        }).catch((error: any) => {
-            // tslint:disable-next-line: no-console
-            console.error(config.errormsg.initialDatabaseConnectError);
+    public static populateTypes(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            const sqlRetrieveQuery = new SQLquery('roles', ['*']);
+            sqlRetrieveQuery.setQuery(Query_Type.Select);
+            sqlRetrieveQuery.sendQuery().then((sqlQueryResult: any) => {
+                for (const obj of sqlQueryResult.rows) {
+                    Role.typesOfRole[parseInt(obj.roleid, 10)] = obj.rolename;
+                }
+                resolve(true);
+            }).catch((error: any) => {
+                // tslint:disable-next-line: no-console
+                console.error(config.errormsg.initialDatabaseConnectError);
+                return reject(false);
+            });
         });
     }
     /** getIdFromType function

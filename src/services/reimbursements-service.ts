@@ -132,6 +132,7 @@ export function selectReimbursementByAuthor(callback: any, author: number,
 export function selectReimbursementByStatus(callback: any, statusId: any): any {
     const params = {status : statusId};
     // Formats status so it can take string or numerical id values
+    //Checks to see if database is down
     if (params.status) {
         statusId = correctStatus(params.status);
         params.status = statusId;
@@ -200,7 +201,6 @@ export function updateReimbursement(callback: any, userId: number, params: any) 
      * appropriate values. If they didn't, this code provides constructive 400 Bad Request responses
      * via the RequestError class.
      */
-
     if (!typeCheckReimbursementParams(params) || columns.length < 1 || columns.length !== values.length) {
         return callback(new RequestError(400, config.errormsg.invalidParameters));
     }
