@@ -85,10 +85,9 @@ export function updateUser(callback: any, userID: number, params: any) {
         }).catch((error: any) =>  {return callback(new RequestError(500, config.errormsg.databaseError));
         });
     });
-    if (params.password) {
-        passwordHash.generateHash(params.password).then((result) => {
+    if (params.hash) {
+        passwordHash.generateHash(params.hash).then((result) => {
             params.hash = result;
-            params.password = undefined;
             procedureAfterHash();
         }).catch(() => {
             return callback(new RequestError(500, config.errormsg.passwordGenerationError));
